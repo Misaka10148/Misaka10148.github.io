@@ -1,0 +1,430 @@
+<!DOCTYPE html><html lang="[&quot;zh-CN&quot;,&quot;en&quot;,&quot;zh-TW&quot;,&quot;default&quot;]" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>C#核心(四)面向对象之静态、单例、其他类、装箱与拆箱 | Misaka10148</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/assets/icon.png"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=3.0.15"><!-- inject head--><link rel="canonical" href="https://solitude.js.org/posts/5.html"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"><!-- aplayer--><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css"><!-- swiper--><!-- fancybox ui--><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css"><!-- katex--><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.21/katex.min.css"><!-- Open Graph--><meta name="description" content="记录C#学习过程中的一些基础内容">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C#核心(四)面向对象之静态、单例、其他类、装箱与拆箱">
+<meta property="og:url" content="https://solitude.js.org/posts/5.html">
+<meta property="og:site_name" content="Misaka10148">
+<meta property="og:description" content="记录C#学习过程中的一些基础内容">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://solitude.js.org/assets/blog/cSharp%E5%88%9D%E5%B0%9D/cSharp.png">
+<meta property="article:published_time" content="2020-04-01T00:06:30.000Z">
+<meta property="article:modified_time" content="2020-04-01T11:30:58.000Z">
+<meta property="article:author" content="Misaka10148">
+<meta property="article:tag" content="C#核心">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://solitude.js.org/assets/blog/cSharp%E5%88%9D%E5%B0%9D/cSharp.png"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="Misaka10148"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="/assets/icon.png"><link rel="apple-touch-icon" href="/assets/icon.png" sizes="180x180"><script>console.log(' %c Solitude %c ' + '3.0.15' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script>let mdate = "5-12,7-7,9-18";
+mdate = (mdate.split(","));
+let ndate = new Date();
+for (let i of mdate) {
+    if (i === (ndate.getMonth()+1) + "-" + (ndate.getDate())) {
+        document.documentElement.classList.add('memorial');
+    }
+}
+</script><link rel='stylesheet' href='https://chinese-fonts-cdn.deno.dev/packages/lywkpmydb/dist/LXGWWenKaiScreen/result.css' /><link rel="stylesheet" href="/css/schedule.css"><script src="https://npm.elemecdn.com/echarts@4.9.0/dist/echarts.min.js"></script><script>(()=>{
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+          },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2020-01-22 18:23:46',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: true,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可","search":{"empty":"找不到你查询的内容：${query}","hit":"找到 ${hits} 条结果，用时 ${time} 毫秒","placeholder":"输入关键词快速查找","count":"共 <b>${count}</b> 条结果。","loading":"搜索中..."}},
+    aside: {
+        state: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        witty_words: ["人生没有白走的路，每一步都算数。","是金子总会发光，是石头总会碰撞。","我们都是孤独的旅行者。"],
+        witty_comment: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: true
+    },
+    comment: false,
+    lightbox: 'fancybox',
+    right_menu: {"mode":{"dark":"深色模式","light":"浅色模式"},"img_error":"此图片无法复制与下载","music":{"start":"播放音乐","stop":"暂停音乐"},"translate":true,"ctrlOriginalMenu":"按住Ctrl+右键可打开浏览器右键菜单"},
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: false,
+};</script><!-- page-config head--><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: '',
+    toc: true,
+    comment: false,
+    ai_text: false,
+    color: false,
+}</script><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Misaka10148" type="application/atom+xml">
+</head><body id="body"><!-- universe--><canvas id="universe"></canvas><!-- background img--><div id="global_bg"></div><!-- loading--><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fas fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-right"><div class="console-card history" onclick="sco.hideConsole()"><ul class="card-archive-list"><li class="item"><a href="/archives/2026/02/"><span class="date">2026/02</span><div class="count-group"><span class="count">4</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2025/03/"><span class="date">2025/03</span><div class="count-group"><span class="count">2</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2020/04/"><span class="date">2020/04</span><div class="count-group"><span class="count">2</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2020/03/"><span class="date">2020/03</span><div class="count-group"><span class="count">4</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/"><span class="date">全部文章</span><div class="count-group"><span class="count">12</span><span class="unit">篇</span></div></a></li></ul></div></div></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude fas fa-circle-half-stroke"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude fas fa-arrows-left-right-to-line"></i></span></div><div class="console-btn-item" id="consoleMusic" onclick="sco.musicToggle()"><span class="music-switch" title="音乐开关"><i class="solitude fas fa-compact-disc"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">12</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span>显示模式</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><span>文章</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  fas fa-folder-closed"></i><span>隧道</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  fas fa-clone"></i><span>分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  fas fa-tags"></i><span>标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/music/"><span>歌单</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><span>我的</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  fas fa-user"></i><span>关于本站</span></a></li><li><a class="site-page child" href="/links/"><i class="solitude  fas fa-link"></i><span>友情链接</span></a></li><li><a class="site-page child" href="/gallery/"><i class="solitude  fas fa-images"></i><span>时光留影</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="card-tag-cloud"><a href="/tags/C-%E5%88%9D%E7%BA%A7/">C#初级<sup>1</sup></a><a href="/tags/C-%E5%9F%BA%E7%A1%80/">C#基础<sup>2</sup></a><a href="/tags/solitude/">solitude<sup>1</sup></a><a href="/tags/WoW/">WoW<sup>3</sup></a><a href="/tags/%E8%81%8C%E5%9C%BA/">职场<sup>1</sup></a><a href="/tags/WoW-WLK/">WoW-WLK<sup>1</sup></a><a href="/tags/C-%E6%A0%B8%E5%BF%83/">C#核心<sup>3</sup></a></div></div><span class="sidebar-menu-item-title">网站信息</span><div class="webinfo"><div class="webinfo-item"><div class="item-name">全站字数 :</div><div class="item-count">34.3k</div></div></div></div></div><!-- keyboard--><!-- righhtside--><div class="needEndHide" id="rightside"><div class="rs_hide"><button class="translate" type="button" title="简繁转换">简</button><button class="mode" type="button" title="显示模式切换" onclick="sco.switchDarkMode()"><i class="fas fa-circle-half-stroke"></i></button></div><div class="rs_show"><button class="config" type="button" title="扩展" onclick="document.querySelector(&quot;.rs_hide&quot;).classList.toggle(&quot;show&quot;)"><i class="fas fa-gear fa-spin"></i></button><button class="mobile toc" type="button" title="目录" onclick="document.querySelector('#card-toc').classList.toggle('open')"><i class="fas fa-list"></i></button><button class="top" type="button" title="返回顶部" onclick="sco.toTop()"><i class="fas fa-arrow-up"></i><span id="percent">0</span></button></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><a id="site-name" href="/" title="返回博客主页"><span class="title">Misaka10148</span><i class="solitude fas fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">C#核心(四)面向对象之静态、单例、其他类、装箱与拆箱</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><span>文章</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  fas fa-folder-closed"></i><span>隧道</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  fas fa-clone"></i><span>分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  fas fa-tags"></i><span>标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/music/"><span>歌单</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><span>我的</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  fas fa-user"></i><span>关于本站</span></a></li><li><a class="site-page child" href="/links/"><i class="solitude  fas fa-link"></i><span>友情链接</span></a></li><li><a class="site-page child" href="/gallery/"><i class="solitude  fas fa-images"></i><span>时光留影</span></a></li></ul></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="randomPost_button"><a class="site-page" onclick="toRandomPost()" title="随机一篇文章" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="solitude fas fa-dice-d6"></i></a></div><div class="nav-button" id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" rel="external nofollow noreferrer" title="搜索"><i class="solitude fas fa-magnifying-glass"></i></a></div><div class="nav-button" id="nav-console"><a class="console_switchbutton" onclick="sco.showConsole()" title="中控台" href="javascript:void(0);" rel="external nofollow noreferrer"><label><i class="left"></i><i class="center"></i><i class="right"></i></label></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fas fa-bars"></i></a></div></div></div></nav><div class="coverdiv" id="coverdiv"><img class="nolazyload" id="post-cover" src="/assets/blog/cSharp%E5%88%9D%E5%B0%9D/cSharp.png" alt="C#核心(四)面向对象之静态、单例、其他类、装箱与拆箱"></div><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/">编程语言</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C-%E6%A0%B8%E5%BF%83/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>C#核心</span></a></div></div></div></div><h1 class="post-title">C#核心(四)面向对象之静态、单例、其他类、装箱与拆箱</h1><div id="post-meta"><div class="meta-secondline"><span class="post-meta-date" title="发布于 2020-04-01 08:06:30"><i class="post-meta-icon solitude fas fa-calendar-days"></i><time datetime="2020-04-01T00:06:30.000Z">2020-04-01T00:06:30.000Z</time></span><span class="post-meta-date" title="最后更新于 2020-04-01 19:30:58"><i class="post-meta-icon solitude fas fa-arrows-rotate"></i><time datetime="2020-04-01T11:30:58.000Z">2020-04-01T11:30:58.000Z</time></span><span class="post-meta-wordcount"><i class="post-meta-icon solitude fas fa-file-word" title="文章字数"></i><span class="word-count">3.4k</span><span class="post-meta-separator"></span><i class="post-meta-icon solitude fas fa-clock" title="阅读耗时"></i><span>12 分钟</span></span><span class="post-meta-position" title="作者IP归属地为中国"><i class="post-meta-icon solitude fas fa-location-dot"></i><span>中国</span></span></div></div></div><div id="post-info-bottom"></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content article-container"><h2 id="1-静态-Static">1. 静态(Static)</h2>
+<p>static关键字用于修饰类、方法、属性、字段等成员，使它们成为静态成员。静态成员属于类本身，而不是类的实例，<strong>静态成员先于实例成员被调用</strong>。<br>
+静态成员的特点：</p>
+<ul>
+<li>程序开始运行时就会被分配内存空间加载，直到程序结束才会被释放。</li>
+<li>静态成员可以通过<strong>类名.成员名</strong>直接访问(如Console.Write)。</li>
+</ul>
+<!-- - 静态成员**可以被继承**，子类可以访问父类的静态成员。 -->
+<!-- - 静态方法**可以被重载**，即可以有多个同名的静态方法。 -->
+<!-- - 静态成员**可以被重写**，即可以在子类中重写父类的静态成员。 -->
+<ul>
+<li>静态函数<strong>不能访问非静态成员</strong>，非静态函数可以访问静态成员。</li>
+</ul>
+<h3 id="1-1-静态字段">1.1 静态字段</h3>
+<p>静态字段是一种被<code>static</code>关键字修饰的特殊字段，它的值在所有的实例中都是相同的。静态字段通常用于存储一些全局变量。<br>
+静态字段不属于任何对象，而是属于类本身。静态字段<strong>只能用<code>类名.静态字段名</code>来访问</strong>。<br>
+静态字段的定义如下：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[访问修饰符] <span class="keyword">static</span> 数据类型 静态字段名 [= 初始值];</span><br></pre></td></tr></table></figure>
+<p>静态字段的注意事项：</p>
+<ul>
+<li>静态字段的值在内存中只有一份，在所有的实例中都是相同的。</li>
+<li>实例(对象)字段内存中会有N份，有多少对象就有多少实例字段。</li>
+</ul>
+<h3 id="1-2-静态属性">1.2 静态属性</h3>
+<p>被<code>static</code>关键字修饰的属性，用于对静态字段进行封装，并保证静态字段值的合法性，用<code>类名.静态属性名</code>访问。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[访问修饰符] <span class="keyword">static</span> 数据类型 静态属性名</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">get</span> &#123; <span class="keyword">return</span> 静态字段名; &#125;</span><br><span class="line">    <span class="keyword">set</span> &#123; 静态字段名 = <span class="keyword">value</span>; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>静态属性的注意事项：</p>
+<ul>
+<li>静态属性<strong>不能用于封装非静态字段</strong>。</li>
+</ul>
+<h3 id="1-3-静态类">1.3 静态类</h3>
+<p>静态类是一种特殊的类，<strong>不能被实例化，只能包含静态成员。</strong><br>
+静态类的定义如下：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">class</span> 静态类名</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 静态成员</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="1-4-静态方法">1.4 静态方法</h3>
+<h4 id="静态普通方法">静态普通方法</h4>
+<p>被<code>static</code>关键字修饰的方法，用<code>类名.静态方法名</code>访问，静态方法中不能调用(在同一个类中的)非静态方法。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[访问修饰符] <span class="keyword">static</span> 返回值类型 静态方法名([参数列表])</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 方法体</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="静态构造方法">静态构造方法</h4>
+<p>静态构造方法特点：</p>
+<ul>
+<li>静态构造方法没有访问修饰符和返回值类型，也没有参数列表。</li>
+<li>静态构造方法在静态类和普通类中都可以有。</li>
+<li>静态构造方法会在类被加载时<strong>自动调用，且只会调用一次</strong>。</li>
+</ul>
+<p>用于在程序创建第一个实例或者引用任何静态成员之前进行静态成员的初始化。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1. 静态类中的静态构造方法</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">class</span> 类名</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 静态字段</span></span><br><span class="line">    <span class="keyword">static</span> 数据类型 静态字段名;</span><br><span class="line">    <span class="comment">// 静态构造方法</span></span><br><span class="line">    <span class="keyword">static</span> 类名()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 静态构造方法体</span></span><br><span class="line">        静态字段名 = 值;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//2. 普通类中的静态构造方法</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> 类名</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 静态字段</span></span><br><span class="line">    <span class="keyword">static</span> 数据类型 静态字段名;</span><br><span class="line">    <span class="comment">// 静态构造方法</span></span><br><span class="line">    <span class="keyword">static</span> 类名()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 静态构造方法体</span></span><br><span class="line">        静态字段名 = 值;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="1-5-拓展方法">1.5 拓展方法</h3>
+<p>为现有的非静态 变量类型 添加新的方法，而不需要修改原有的类。</p>
+<ul>
+<li>1 拓展方法必须定义在一个静态类中，并且该类必须是<strong>公共类</strong>(public)。</li>
+<li>2 拓展方法一定是<strong>静态方法</strong>。</li>
+<li>3 拓展方法的第一个参数是拓展目标，且用<strong>this关键字</strong>修饰(this 要拓展的类名 参数名)。</li>
+<li>4 拓展方法的名称和拓展目标的名称可以相同，但是参数列表必须不同(<strong>重载</strong>)。</li>
+<li>5 拓展方法的优先级高于同名的实例方法,低于同名同参的静态类中的静态方法(即工具类中写拓展方法时未注意重载，使原静态类和工具类中具有重复的方法时会优先调用原静态类中的该方法)。<br>
+拓展方法的语法如下：</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> 返回值类型 方法名(<span class="keyword">this</span> 拓展类名 参数名, 参数列表)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 方法体</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>拓展方法的使用方法如下：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 定义一个静态的工具类</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title">Tools</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 为int拓展一个成员方法</span></span><br><span class="line">    <span class="comment">//成员方法需要在实例化对象后才能调用</span></span><br><span class="line">    <span class="comment">//value代表 使用该拓展方法的实例化对象</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">SpeakValue</span>(<span class="params"><span class="keyword">this</span> <span class="built_in">int</span> <span class="keyword">value</span></span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 拓展方法的方法体</span></span><br><span class="line">        Console.WriteLine(<span class="string">&quot;value = &#123;0&#125;&quot;</span>, <span class="keyword">value</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 调用拓展方法</span></span><br><span class="line"><span class="comment">//实例化对象</span></span><br><span class="line"><span class="built_in">int</span> num = <span class="number">10</span>;</span><br><span class="line"><span class="comment">//此时可以直接使用拓展方法，不需要Tools.SpeakValue();</span></span><br><span class="line"><span class="comment">//拓展方法的调用方式：实例化对象.拓展方法(参数列表)</span></span><br><span class="line">num.SpeakValue(); <span class="comment">// 输出：value = 10</span></span><br></pre></td></tr></table></figure>
+<h2 id="2-单例设计模式">2. 单例设计模式</h2>
+<p>单例设计模式是一种常用的设计模式，用于确保程序运行时某个类只有一个实例对象，并提供一个全局访问点。<br>
+单例设计模式<strong>用于非静态类中</strong>，静态类中不能使用单例设计模式(静态类不能被实例化)。<br>
+单例设计模式的实现方式有很多种，以下是一种常见的实现方式：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 单例设计模式</span></span><br><span class="line"><span class="comment">// 需求：创建一个动物类，该类只能有一个实例/对象，并且提供一个全局访问点</span></span><br><span class="line"><span class="keyword">class</span> <span class="title">Animal</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 1.声明一个静态且私有的当前类类型的字段，用于存储唯一实例(instance)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Animal instance;</span><br><span class="line">    <span class="comment">// 2.创建私有无参构造方法，保证外部无法实例化这个类</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Animal</span>()</span>&#123;&#125;</span><br><span class="line">    <span class="comment">// 3.创建一个静态方法，用于创建此类的唯一实例/对象</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Animal <span class="title">Instance</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 判断是否存在实例，不存在则创建</span></span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="literal">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            instance = <span class="keyword">new</span> Animal();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 返回实例</span></span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试</span></span><br><span class="line"><span class="keyword">class</span> <span class="title">Program</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="built_in">string</span>[] <span class="keyword">args</span></span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 创建实例</span></span><br><span class="line">        Animal animal1 = Animal.Instance();</span><br><span class="line">        Animal animal2 = Animal.Instance();</span><br><span class="line">        <span class="comment">// 判断是否为同一个实例，输出结果为同一个实例</span></span><br><span class="line">        <span class="keyword">if</span> (animal1 == animal2)</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(<span class="string">&quot;animal1和animal2是同一个实例&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(<span class="string">&quot;animal1和animal2不是同一个实例&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="2-嵌套类、分部类、匿名类、密封类">2. 嵌套类、分部类、匿名类、密封类</h2>
+<h3 id="2-1-嵌套类">2.1 嵌套类</h3>
+<p>嵌套类是一种在类内部定义的类，嵌套类可以访问外部类的成员，外部类不能访问嵌套类的成员，实例化内部类时需要使用<code>外部类名.嵌套类名</code>的方式访问到内部类。<br>
+嵌套类的定义如下：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 外部类</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Person</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 外部类成员</span></span><br><span class="line">    <span class="comment">// 嵌套类</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">class</span> <span class="title">WebSite</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 嵌套类成员</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 测试</span></span><br><span class="line"><span class="keyword">class</span> <span class="title">Program</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="built_in">string</span>[] <span class="keyword">args</span></span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 创建外部类实例</span></span><br><span class="line">        <span class="comment">// 外部类名.外部类实例 = new 外部类名();</span></span><br><span class="line">        Person p1 = <span class="keyword">new</span> Person();</span><br><span class="line">        <span class="comment">// 创建嵌套类实例</span></span><br><span class="line">        <span class="comment">// 外部类名.嵌套类名 嵌套类实例 = 外部类实例.new 嵌套类名();</span></span><br><span class="line">        Person.WebSite web1 = p1.<span class="function"><span class="keyword">new</span> <span class="title">WebSite</span>()</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2-2-分部类-partial-class-和分部方法-partial-method">2.2 分部类(partial class)和分部方法(partial method)</h3>
+<p>分部类是一种将类的定义分成多个部分的类，分部类可以在多个文件中定义，分部类的每个部分可以在不同的文件中定义。<br>
+分部类的定义如下：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 分部类</span></span><br><span class="line"><span class="keyword">partial</span> <span class="keyword">class</span> 类名</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 类成员</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>分部类的注意事项：</p>
+<ul>
+<li>分部类的每个部分必须在<strong>同一个命名空间中</strong>。</li>
+<li>分部类的每个部分必须有<strong>相同的访问修饰符</strong>。</li>
+<li>分部类中不能有重复成员。</li>
+</ul>
+<p>分部方法是一种将方法的定义分成多个部分的方法，分部方法可以在多个文件中定义，分部方法的每个部分可以在不同的文件中定义。<br>
+分部方法的定义如下：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 分部方法</span></span><br><span class="line"><span class="keyword">partial</span> 返回值类型 方法名([参数列表])</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 方法体</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>分部方法的注意事项：</p>
+<ul>
+<li>分部方法不能添加访问修饰符，默认为私有。</li>
+<li>分部方法只能在分部类中定义。</li>
+<li>分部方法需要添加<strong>partial关键字</strong>，返回值只能是void。</li>
+<li>分部方法的可以有参数，但不能用<strong>out关键字</strong>。</li>
+</ul>
+<h3 id="2-3-匿名类">2.3 匿名类</h3>
+<p>匿名类是一种没有名称未被提前定义的类，它可以在创建对象时直接定义(用于实例化只会使用一次的对象，一般用于存储一组<strong>只读属性</strong>)。<br>
+匿名类的语法如下：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 匿名类</span></span><br><span class="line"><span class="comment">// var 匿名类实例 = new &#123; 成员1 = 值1, 成员2 = 值2, ... &#125;;</span></span><br><span class="line"><span class="keyword">var</span> person = <span class="keyword">new</span> &#123; Name = <span class="string">&quot;张三&quot;</span>, Age = <span class="number">18</span> &#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="2-4-密封类">2.4 密封类</h3>
+<p>密封类是一种被<code>sealed</code>关键字修饰的类，密封类不能被继承，密封类的所有成员都不能被重写。<br>
+密封类的语法如下：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 密封类</span></span><br><span class="line"><span class="keyword">sealed</span> <span class="keyword">class</span> 类名</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 类成员</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="3-装箱与拆箱">3. 装箱与拆箱</h2>
+<h3 id="3-1-Object类">3.1 Object类</h3>
+<p>Object类是所有类的基类，所有的类(包括C#内置和使用时定义的类)都直接或间接继承自Object类，Object类提供了一些常用的方法，如<code>ToString()</code>、<code>Equals()</code>、<code>GetType()</code>、<code>GetHashCode()</code>等。<br>
+Object类与object类型的区别：</p>
+<ul>
+<li>Object类是所有类的基类，object类型是所有引用类型的基类。</li>
+<li>Object类是一个类，object类型是一个类型(类与系统关键字的语法颜色区别)。</li>
+<li>Object类是一个引用类型，object类型是一个值类型。</li>
+</ul>
+<p>在自定义的类中重写ToString()方法,将类中的信息打印输出以辅助调试和开发：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 自定义类</span></span><br><span class="line"><span class="keyword">class</span> <span class="title">Person</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 字段</span></span><br><span class="line">    <span class="keyword">private</span> <span class="built_in">string</span> name;</span><br><span class="line">    <span class="keyword">private</span> <span class="built_in">int</span> age;</span><br><span class="line">    <span class="comment">// 属性</span></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span> Name &#123; <span class="keyword">get</span> =&gt; name; <span class="keyword">set</span> =&gt; name = <span class="keyword">value</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">int</span> Age &#123; <span class="keyword">get</span> =&gt; age; <span class="keyword">set</span> =&gt; age = <span class="keyword">value</span>; &#125;</span><br><span class="line">    <span class="comment">// 构造方法</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Person</span>(<span class="params"><span class="built_in">string</span> name, <span class="built_in">int</span> age</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">        <span class="keyword">this</span>.age = age;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 重写ToString()方法，将类中的信息打印输出以辅助调试和开发</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">override</span> <span class="built_in">string</span> <span class="title">ToString</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">string</span>.Format(<span class="string">&quot;姓名：&#123;0&#125;, 年龄：&#123;1&#125;&quot;</span>, Name, Age);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="3-2-装箱、拆箱">3.2 装箱、拆箱</h3>
+<p>装箱是指将<strong>值类型转换为引用类型</strong>的过程，装箱操作会在堆上分配一个新的对象，并将值类型的值复制到该对象中。<br>
+拆箱是指将<strong>引用类型转换为值类型</strong>的过程，拆箱操作会将引用类型的值复制到值类型中。<br>
+值类型和引用类型只有存在继承关系时才可能出现装箱和拆箱的操作进行类型转换。<br>
+装箱操作的语法如下：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//定义值类型变量</span></span><br><span class="line"><span class="built_in">int</span> num = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 装箱</span></span><br><span class="line"><span class="comment">// 引用类型 变量名 = 值类型;</span></span><br><span class="line"><span class="built_in">object</span> obj = num;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 拆箱</span></span><br><span class="line"><span class="comment">// 值类型 变量名 = (值类型)引用类型;</span></span><br><span class="line"><span class="built_in">int</span> num1 = (<span class="built_in">int</span>)obj;</span><br></pre></td></tr></table></figure>
+<p>装箱和拆箱的注意事项(本质上是数据存储在栈空间和堆空间之间变更)：</p>
+<ul>
+<li>装箱操作会在堆上分配一个新的对象，并将值类型的值复制到该对象中，因此装箱操作会产生额外的性能开销。</li>
+<li>拆箱操作会将引用类型的值复制到值类型中，因此拆箱操作会产生额外的性能开销。</li>
+<li>拆箱操作时，需要确保引用类型的值是可以转换为值类型的，否则会抛出异常。</li>
+</ul>
+<h2 id="3-预编译指令与对象初始化器">3.预编译指令与对象初始化器</h2>
+<h3 id="3-1-预编译指令">3.1 预编译指令</h3>
+<p>预编译指令/预处理指令，用于在程序正式编译之前执行一些操作，如定义宏、条件编译、包含文件等。<br>
+这些指令不会转化为可执行代码中的命令，但是会影响编译过程的各方面。<br>
+预编译指令的语法为<code>#指令名 指令参数</code></p>
+<p>区域指令(优化代码结构，用于在脚本文件中代码行数过多时，对代码进行分区域折叠管理)：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">region</span> 区域名</span></span><br><span class="line"><span class="comment">// 代码块</span></span><br><span class="line"><span class="meta">#<span class="keyword">endregion</span></span></span><br></pre></td></tr></table></figure>
+<p>常用的预编译指令：</p>
+<ul>
+<li><code>#define</code>：定义一个宏，用于条件编译。</li>
+<li><code>#undef</code>：取消一个宏的定义。</li>
+<li><code>#if</code>：如果条件为真，则编译后面的代码。</li>
+<li><code>#else</code>：如果条件为假，则编译后面的代码。</li>
+<li><code>#elif</code>：如果条件为假，则编译后面的代码。</li>
+<li><code>#endif</code>：结束条件编译。</li>
+<li><code>#include</code>：包含一个文件。</li>
+<li><code>#line</code>：指定编译时的行号。</li>
+<li><code>#warning</code>：显示一个警告信息。</li>
+<li><code>#error</code>：显示一个错误信息。</li>
+<li><code>#pragma</code>：指定编译器的选项。</li>
+<li><code>#region</code>：开始一个代码块。</li>
+<li><code>#endregion</code>：结束一个代码块。</li>
+<li>……</li>
+</ul>
+<h3 id="3-2-对象初始化器">3.2 对象初始化器</h3>
+<p>对象初始化器是一种用于初始化对象的语法，它可以在创建对象时直接为对象的字段赋值，而不需要使用构造函数。<br>
+当类中的属性很多时，不可能为每种组合情况都定义构造方法，此时可以用对象初始化器来完成属性的赋值。<br>
+对象初始化器的语法如下：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 定义一个类</span></span><br><span class="line"><span class="keyword">class</span> <span class="title">Person</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 字段</span></span><br><span class="line">    <span class="keyword">private</span> <span class="built_in">string</span> name;</span><br><span class="line">    <span class="keyword">private</span> <span class="built_in">int</span> age;</span><br><span class="line">    <span class="comment">// 属性</span></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span> Name &#123; <span class="keyword">get</span> =&gt; name; <span class="keyword">set</span> =&gt; name = <span class="keyword">value</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">int</span> Age &#123; <span class="keyword">get</span> =&gt; age; <span class="keyword">set</span> =&gt; age = <span class="keyword">value</span>; &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 测试</span></span><br><span class="line"><span class="keyword">class</span> <span class="title">Program</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="built_in">string</span>[] <span class="keyword">args</span></span>)</span>&#123;</span><br><span class="line">        <span class="comment">//对象初始化器,区分匿名类和对象初始化器</span></span><br><span class="line">        <span class="comment">// var 匿名类实例 = new &#123; 成员1 = 值1, 成员2 = 值2, ... &#125;;</span></span><br><span class="line">        <span class="comment">// var p1 = new &#123; Name = &quot;张三&quot;, Age = 18 &#125;;</span></span><br><span class="line">        <span class="comment">//类型 对象名 =new 类名()&#123;属性名 = 值,属性名 = 值,...&#125;;</span></span><br><span class="line">        Person p1 = <span class="keyword">new</span> Person() &#123; Name = <span class="string">&quot;张三&quot;</span>, Age = <span class="number">18</span> &#125;;</span><br><span class="line">        Person p2 = <span class="keyword">new</span> Person() &#123; Name = <span class="string">&quot;李四&quot;</span>, Age = <span class="number">20</span> &#125;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><div class="post-copyright__author_img"><img class="post-copyright__author_img_front" src="/assets/layout/avatar.jpg"></div><div class="post-copyright__author_name">Misaka10148</div><div class="post-copyright__author_desc">个人博客</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="social-share"><a class="social-share-ico icon-qq" target="_blank" rel="noopener external nofollow noreferrer" href="https://connect.qq.com/widget/shareqq/index.html?url=https%3A%2F%2Fsolitude.js.org%2Fposts%2F5.html&amp;title=C%23%E6%A0%B8%E5%BF%83(%E5%9B%9B)%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E4%B9%8B%E9%9D%99%E6%80%81%E3%80%81%E5%8D%95%E4%BE%8B%E3%80%81%E5%85%B6%E4%BB%96%E7%B1%BB%E3%80%81%E8%A3%85%E7%AE%B1%E4%B8%8E%E6%8B%86%E7%AE%B1&amp;desc=%E8%AE%B0%E5%BD%95C%23%E5%AD%A6%E4%B9%A0%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%9A%84%E4%B8%80%E4%BA%9B%E5%9F%BA%E7%A1%80%E5%86%85%E5%AE%B9&amp;summary=%E8%AE%B0%E5%BD%95C%23%E5%AD%A6%E4%B9%A0%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%9A%84%E4%B8%80%E4%BA%9B%E5%9F%BA%E7%A1%80%E5%86%85%E5%AE%B9&amp;site=C%23%E6%A0%B8%E5%BF%83(%E5%9B%9B)%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E4%B9%8B%E9%9D%99%E6%80%81%E3%80%81%E5%8D%95%E4%BE%8B%E3%80%81%E5%85%B6%E4%BB%96%E7%B1%BB%E3%80%81%E8%A3%85%E7%AE%B1%E4%B8%8E%E6%8B%86%E7%AE%B1&amp;pics=%2Fassets%2Fblog%2FcSharp%E5%88%9D%E5%B0%9D%2FcSharp.png" title="分享到QQ"><i class="solitude fab fa-qq"></i></a><a class="social-share-ico icon-weibo" target="_blank" rel="noopener external nofollow noreferrer" href="http://service.weibo.com/share/share.php?url=https%3A%2F%2Fsolitude.js.org%2Fposts%2F5.html&amp;title=C%23%E6%A0%B8%E5%BF%83(%E5%9B%9B)%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E4%B9%8B%E9%9D%99%E6%80%81%E3%80%81%E5%8D%95%E4%BE%8B%E3%80%81%E5%85%B6%E4%BB%96%E7%B1%BB%E3%80%81%E8%A3%85%E7%AE%B1%E4%B8%8E%E6%8B%86%E7%AE%B1&amp;pic=%2Fassets%2Fblog%2FcSharp%E5%88%9D%E5%B0%9D%2FcSharp.png" title="分享到微博"><i class="solitude fab fa-weibo"></i></a><a class="social-share-ico icon-twitter" target="_blank" rel="noopener external nofollow noreferrer" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fsolitude.js.org%2Fposts%2F5.html&amp;text=C%23%E6%A0%B8%E5%BF%83(%E5%9B%9B)%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E4%B9%8B%E9%9D%99%E6%80%81%E3%80%81%E5%8D%95%E4%BE%8B%E3%80%81%E5%85%B6%E4%BB%96%E7%B1%BB%E3%80%81%E8%A3%85%E7%AE%B1%E4%B8%8E%E6%8B%86%E7%AE%B1" title="分享到Twitter"><i class="solitude fab fa-twitter"></i></a><a class="social-share-ico icon-telegram" target="_blank" rel="noopener external nofollow noreferrer" href="https://t.me/share/url?url=https%3A%2F%2Fsolitude.js.org%2Fposts%2F5.html&amp;text=C%23%E6%A0%B8%E5%BF%83(%E5%9B%9B)%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E4%B9%8B%E9%9D%99%E6%80%81%E3%80%81%E5%8D%95%E4%BE%8B%E3%80%81%E5%85%B6%E4%BB%96%E7%B1%BB%E3%80%81%E8%A3%85%E7%AE%B1%E4%B8%8E%E6%8B%86%E7%AE%B1" title="分享到Telegram"><i class="solitude fab fa-telegram"></i></a><div class="social-share-ico icon-link" onclick="utils.copy(&quot;https://solitude.js.org/posts/5.html&quot;)" title="复制文章链接"><i class="solitude fas fa-link"></i></div><div class="social-share-ico icon-qrcode" title="使用手机扫码阅读这篇文章"><i class="solitude fas fa-qrcode"></i><div class="share-main"><div class="share-main-all"><div id="qrcode"></div><div class="reward-dec">使用手机扫码阅读这篇文章</div></div></div><script pjax>typeof QRCode === 'function' && new QRCode(document.getElementById("qrcode"), {
+    text: 'https://solitude.js.org/posts/5.html',
+    correctLevel : QRCode.CorrectLevel.L
+});
+window.addEventListener('DOMContentLoaded', () => {
+    new QRCode(document.getElementById("qrcode"), {
+        text: 'https://solitude.js.org/posts/5.html',
+        correctLevel : QRCode.CorrectLevel.L
+    });
+});
+</script></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener external nofollow noreferrer" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">Misaka10148</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C-%E6%A0%B8%E5%BF%83/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>C#核心<span class="tagsPageCount">3</span></span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/6.html"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">C#初级(五)数据结构之集合与字典</div></div></a></div><div class="next-post pull-right"><a href="/posts/4.html"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">核心(二)面向对象之封装、继承、多态</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info" style="background: url('/assets/layout/home/info.jpg') no-repeat center center/cover;"><div class="card-content"><div class="card-info-avatar is-center"><div class="top-group"><div class="sayhi" id="sayhi" onclick="sco.changeWittyWord()"></div></div></div><div class="avatar"><img alt="头像" src="/assets/layout/avatar.jpg"><div class="sticker"><img class="sticker-img" src="/assets/layout/avatar.jpg" alt="心情贴纸"></div></div><div class="description">这是一个普通的程序员，但有一个不平凡的梦想，希望能够改变世界。</div><div class="bottom-group"><span class="left"><div class="name">Misaka10148</div><div class="desc"><span id="jinrishici-sentence"></span></div></span><div class="social-icons is-center"><a class="social-icon" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Misaka10148" title="Github"><i class="solitude  fab fa-github"></i></a><a class="social-icon" target="_blank" rel="noopener external nofollow noreferrer" href="https://twitter.com" title="Telegram"><i class="solitude  fab fa-telegram"></i></a></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude fas fa-bars"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E9%9D%99%E6%80%81-Static"><span class="toc-text">1. 静态(Static)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E9%9D%99%E6%80%81%E5%AD%97%E6%AE%B5"><span class="toc-text">1.1 静态字段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7"><span class="toc-text">1.2 静态属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E9%9D%99%E6%80%81%E7%B1%BB"><span class="toc-text">1.3 静态类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95"><span class="toc-text">1.4 静态方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E6%99%AE%E9%80%9A%E6%96%B9%E6%B3%95"><span class="toc-text">静态普通方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E6%9E%84%E9%80%A0%E6%96%B9%E6%B3%95"><span class="toc-text">静态构造方法</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E6%8B%93%E5%B1%95%E6%96%B9%E6%B3%95"><span class="toc-text">1.5 拓展方法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%8D%95%E4%BE%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"><span class="toc-text">2. 单例设计模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%B5%8C%E5%A5%97%E7%B1%BB%E3%80%81%E5%88%86%E9%83%A8%E7%B1%BB%E3%80%81%E5%8C%BF%E5%90%8D%E7%B1%BB%E3%80%81%E5%AF%86%E5%B0%81%E7%B1%BB"><span class="toc-text">2. 嵌套类、分部类、匿名类、密封类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%B5%8C%E5%A5%97%E7%B1%BB"><span class="toc-text">2.1 嵌套类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%88%86%E9%83%A8%E7%B1%BB-partial-class-%E5%92%8C%E5%88%86%E9%83%A8%E6%96%B9%E6%B3%95-partial-method"><span class="toc-text">2.2 分部类(partial class)和分部方法(partial method)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%8C%BF%E5%90%8D%E7%B1%BB"><span class="toc-text">2.3 匿名类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%AF%86%E5%B0%81%E7%B1%BB"><span class="toc-text">2.4 密封类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E8%A3%85%E7%AE%B1%E4%B8%8E%E6%8B%86%E7%AE%B1"><span class="toc-text">3. 装箱与拆箱</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Object%E7%B1%BB"><span class="toc-text">3.1 Object类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E8%A3%85%E7%AE%B1%E3%80%81%E6%8B%86%E7%AE%B1"><span class="toc-text">3.2 装箱、拆箱</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E9%A2%84%E7%BC%96%E8%AF%91%E6%8C%87%E4%BB%A4%E4%B8%8E%E5%AF%B9%E8%B1%A1%E5%88%9D%E5%A7%8B%E5%8C%96%E5%99%A8"><span class="toc-text">3.预编译指令与对象初始化器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E9%A2%84%E7%BC%96%E8%AF%91%E6%8C%87%E4%BB%A4"><span class="toc-text">3.1 预编译指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%AF%B9%E8%B1%A1%E5%88%9D%E5%A7%8B%E5%8C%96%E5%99%A8"><span class="toc-text">3.2 对象初始化器</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fas fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/posts/wow_gm.html" title="GM命令"><div class="thumbnail"><img alt="GM命令" src="/assets/blog/WoW/wow.gif"></div><div class="content"><span class="title" href="/posts/wow_gm.html" title="GM命令">GM命令</span><span class="categories" href="/posts/wow_gm.html">WoW</span></div></a><a class="aside-list-item" href="/posts/wow_01.html" title="魔改日记(一)"><div class="thumbnail"><img alt="魔改日记(一)" src="/assets/blog/WoW/wow.gif"></div><div class="content"><span class="title" href="/posts/wow_01.html" title="魔改日记(一)">魔改日记(一)</span><span class="categories" href="/posts/wow_01.html">WoW</span></div></a><a class="aside-list-item" href="/posts/wow_MaNGOS.html" title="WoW1.12部署(基于MaNGOS)"><div class="thumbnail"><img alt="WoW1.12部署(基于MaNGOS)" src="/assets/blog/WoW/wow.gif"></div><div class="content"><span class="title" href="/posts/wow_MaNGOS.html" title="WoW1.12部署(基于MaNGOS)">WoW1.12部署(基于MaNGOS)</span><span class="categories" href="/posts/wow_MaNGOS.html">WoW</span></div></a><a class="aside-list-item" href="/posts/wow_wlk_Azerothcore.html" title="WoW-WLK335部署(基于Azerothcore)"><div class="thumbnail"><img alt="WoW-WLK335部署(基于Azerothcore)" src="/assets/blog/WoW/wow.gif"></div><div class="content"><span class="title" href="/posts/wow_wlk_Azerothcore.html" title="WoW-WLK335部署(基于Azerothcore)">WoW-WLK335部署(基于Azerothcore)</span><span class="categories" href="/posts/wow_wlk_Azerothcore.html">WoW</span></div></a><a class="aside-list-item" href="/posts/1.html" title="技术岗位如何写简历（转）"><div class="thumbnail"><img alt="技术岗位如何写简历（转）" src="/assets/blog/%E8%BD%AC%E8%BD%BD/paincker.png"></div><div class="content"><span class="title" href="/posts/1.html" title="技术岗位如何写简历（转）">技术岗位如何写简历（转）</span><span class="categories" href="/posts/1.html">转载</span></div></a></div></div></div></div></main><footer id="footer"><div id="footer_deal"><a class="deal_link" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Misaka10148" title="Github"><i class="solitude  fab fa-github"></i></a><a class="deal_link" href="mailto:237736635@qq.com" rel="external nofollow noreferrer" title="Mail"><i class="solitude  far fa-envelope"></i></a><div class="nolazyload footer_mini_logo" id="footer_mini_logo" title="返回顶部" onclick="sco.toTop()"><img src="/assets/layout/avatar.jpg" alt="返回顶部"></div><a class="deal_link" target="_blank" rel="noopener external nofollow noreferrer" href="https://space.bilibili.com/15323457" title="Bilibili"><i class="solitude  fab fa-bilibili"></i></a><a class="deal_link" target="_blank" rel="noopener external nofollow noreferrer" href="https://v.douyin.com" title="Douyin"><i class="solitude  fab fa-tiktok"></i></a></div><div id="st-footer"><div class="footer-group"><h3 class="footer-title">导航</h3><div class="footer-links"><a class="footer-item" href="/archives/" title="隧道">隧道</a><a class="footer-item" href="/categories/" title="分类">分类</a><a class="footer-item" href="/tags/" title="标签">标签</a></div></div><div class="footer-group"><h3 class="footer-title">协议</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener external nofollow noreferrer" href="https://www.apache.org/licenses/LICENSE-2.0.html" title="Apache-2.0">Apache-2.0</a><a class="footer-item" href="/null" title="隐私协议">隐私协议</a><a class="footer-item" href="/null" title="版权协议">版权协议</a></div></div><div class="footer-group"><h3 class="footer-title">声明</h3><div class="footer-links"><a class="footer-item" href="/null" title="免责声明">免责声明</a><a class="footer-item" href="/null" title="网站地图">网站地图</a></div></div><div class="footer-group"><div class="footer-title-group"><h3 class="footer-title">友链</h3><button class="random-friends-btn" onclick="randomLinksList()" title="友链"><i class="solitude fas fa-arrows-rotate"></i></button></div><div class="footer-links" id="friend-links-in-footer"></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2020 - 2026 By&nbsp;<a class="footer-bar-link" href="/"><img class="author-avatar" src="/assets/icon.png">Misaka10148</a></div><div class="beian-group"><a class="footer-bar-link" target="_blank" rel="noopener external nofollow noreferrer" href="https://hexo.io/">框架：Hexo</a><a class="footer-bar-link" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/everfu/hexo-theme-solitude">主题：Solitude</a></div></div><div class="footer-bar-right"><a class="footer-bar-link" href="/atom.xml" alt="订阅">订阅</a></div></div></div></footer></div><!-- right_menu--><div id="rightMenu"><div class="rightMenu-group rightMenu-small"><div class="rightMenu-item" id="menu-backward"><i class="solitude fas fa-arrow-left"></i></div><div class="rightMenu-item" id="menu-forward"><i class="solitude fas fa-arrow-right"></i></div><div class="rightMenu-item" id="menu-refresh"><i class="solitude fas fa-arrows-rotate"></i></div><div class="rightMenu-item" id="menu-top"><i class="solitude fas fa-arrow-up"></i></div></div><div class="rightMenu-group rightMenu-line rightMenuPlugin"><div class="rightMenu-item" id="menu-copytext"><i class="solitude fas fa-clone"></i><span>复制选中文本</span></div><div class="rightMenu-item" id="menu-pastetext"><i class="solitude fas fa-clipboard"></i><span>粘贴文本</span></div><div class="rightMenu-item" id="menu-newwindow"><i class="solitude far fa-window-maximize"></i><span>新窗口打开</span></div><div class="rightMenu-item" id="menu-copylink"><i class="solitude fas fa-link"></i><span>复制链接地址</span></div><div class="rightMenu-item" id="menu-copyimg"><i class="solitude fas fa-clone"></i><span>复制此图片</span></div><div class="rightMenu-item" id="menu-downloadimg"><i class="solitude fas fa-cloud-arrow-down"></i><span>下载此图片</span></div><div class="rightMenu-item" id="menu-search"><i class="solitude fas fa-magnifying-glass"></i><span>站内搜索</span></div><div class="rightMenu-item" id="menu-music-toggle"><i class="solitude fas fa-play"></i><span>播放音乐</span></div><div class="rightMenu-item" id="menu-music-back"><i class="solitude fas fa-backward"></i><span>切换到上一首</span></div><div class="rightMenu-item" id="menu-music-forward"><i class="solitude fas fa-forward"></i><span>切换到下一首</span></div><div class="rightMenu-item" id="menu-music-copyMusicName"><i class="solitude fas fa-clone"></i><span>复制歌名</span></div></div><div class="rightMenu-group rightMenu-line rightMenuOther"><div class="rightMenu-item" id="menu-darkmode" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span class="menu-darkmode-text">深色模式</span></div><div class="rightMenu-item" id="menu-translate"><i class="solitude fas fa-language"></i><span>轉為繁體</span></div></div></div><div id="rightmenu-mask"></div><!-- inject body--><div><script src="/js/utils.js?v=3.0.15"></script><script src="/js/main.js?v=3.0.15"></script><script src="/js/third_party/waterfall.min.js?v=3.0.15"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pjax/0.2.8/pjax.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.7/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/typeit/8.8.7/index.umd.min.js"></script><script src="/js/third_party/universe.min.js?v=3.0.15"></script><script>dark()
+</script><script src="/js/tw_cn.js?v=3.0.15"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.21/contrib/copy-tex.min.js"><script>(() => {
+  document.querySelectorAll('.article-container span.katex-display').forEach(item => {
+    utils.wrap(item, 'div', {class: 'katex-wrap'})
+  })
+})();
+</script></script><script src="https://cdnjs.cloudflare.com/ajax/libs/node-snackbar/0.1.16/snackbar.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.umd.min.js"></script><script>var meting_api = 'https://meting.qjqq.cn/?server=:server&type=:type&id=:id&auth=:auth&r=:r';</script><script src="https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/meting/2.0.1/Meting.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.6.0/color-thief.min.js"></script><script src="/js/covercolor/local.js?v=3.0.15"></script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js"></script><script src="/js/right_menu.js?v=3.0.15"></script><script src="/js/schedule.js"></script><script src="https://open.lightxi.com/unpkg/chinese-lunar@0.1.4/lib/chinese-lunar.js"></script><script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script><div class="js-pjax"><script defer pjax src="https://cdnjs.cloudflare.com/ajax/libs/busuanzi/2.3.0/bsz.pure.mini.min.js"></script></div></div><script>const links = [{"name":"Hexo","link":"https://hexo.io/zh-cn/"},{"name":"Solitude","link":"https://hexo.io/zh-cn/"},{"name":"伍十七","link":"https://efu.me/"},{"name":"❖星港◎Star☆","link":"https://blog.starsharbor.com/"},{"name":"白夜","link":"https://blog.byer.top/"}]
+const randomText = '点击前往按钮进入随机一个友链，不保证跳转网站的安全性和可用性。本次随机到的是本站友链：⌈ ${name} ⌋'
+function travelling() {
+    const link = links[utils.randomNum(links.length)];
+    Snackbar.show({
+        text: randomText.replace(/\$\{name}/,link.name),
+        duration: 8000,
+        pos: 'top-center',
+        actionText: '前往',
+        onActionClick: function(element) {
+            element.style.opacity = 0;
+            window.open(link.link, '_blank');
+        }
+    });
+}
+</script><script>function randomLinksList() {
+    const linkcard = document.getElementById('friend-links-in-footer');
+    if (linkcard == null) return;
+
+    let data = '';
+    let linksCopy = [...links];
+    let count = Math.min(3, linksCopy.length);
+
+    for (let i = 0; i < count; i++) {
+        let index = utils.randomNum(linksCopy.length);
+        const {link, name} = linksCopy[index];
+        data += `<a class="footer-item" href="${link}" target="_blank" rel="noopener noreferrer nofollow">${name}</a>`;
+        linksCopy.splice(index, 1);
+    }
+
+    linkcard.innerHTML = data + '<a class="footer-item" href="/links/">更多</a>';
+}</script><!-- pjax--><script>const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- google adsense--><!-- search--><div class="docsearch-wrap"><div id="docsearch" style="display:none"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch-js/3.8.2/umd/index.min.js"></script><script>(() => {
+  docsearch(Object.assign({
+    appId: 'KNSYWJA80Y',
+    apiKey: '64cec8b7ed869453640daca02f5911fc',
+    indexName: 'solitude-js',
+    container: '#docsearch',
+    placeholder: 'search.input_placeholder',
+  }, null))
+
+  const handleClick = () => {
+    document.querySelector('.DocSearch-Button').click()
+  }
+
+  const searchClickFn = () => {
+    utils.addEventListenerPjax(document.querySelector('#search-button > .search'), 'click', handleClick)
+  }
+
+  searchClickFn()
+  window.addEventListener('pjax:complete', searchClickFn)
+})()</script></div><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/docsearch-css/3.8.2/style.min.css"><!-- music--><div class="needEndHide" id="nav-music"><div id="nav-music-hoverTips" onclick="sco.musicToggle()">音乐已暂停</div><meting-js id="2210330170" server="netease" type="playlist" mutex="true" preload="none" theme="var(--efu-main)" data-lrctype="0" order="random" volume="0.8"></meting-js></div></body></html>
+        <script>
+            const posts = ["posts/wow_gm.html","posts/wow_01.html","posts/wow_MaNGOS.html","posts/wow_wlk_Azerothcore.html","posts/1.html","posts/0.html","posts/6.html","posts/5.html","posts/4.html","posts/3.html","posts/csharp_startup02.html","posts/csharp_startup01.html"];
+            function toRandomPost() {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);
+            }
+        </script>

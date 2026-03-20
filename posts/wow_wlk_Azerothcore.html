@@ -1,0 +1,469 @@
+<!DOCTYPE html><html lang="[&quot;zh-CN&quot;,&quot;en&quot;,&quot;zh-TW&quot;,&quot;default&quot;]" data-theme="light"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>WoW-WLK335部署(基于Azerothcore) | Misaka10148</title><noscript>开启JavaScript才能访问本站哦~</noscript><link rel="icon" href="/assets/icon.png"><!-- index.css--><link rel="stylesheet" href="/css/index.css?v=3.0.15"><!-- inject head--><link rel="canonical" href="https://solitude.js.org/posts/wow_wlk_Azerothcore.html"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"><!-- aplayer--><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css"><!-- swiper--><!-- fancybox ui--><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css"><!-- katex--><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.21/katex.min.css"><!-- Open Graph--><meta name="description" content="这篇文章是关于如何基于Azerothcore部署wow_wlk335的分享。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WoW-WLK335部署(基于Azerothcore)">
+<meta property="og:url" content="https://solitude.js.org/posts/wow_wlk_Azerothcore.html">
+<meta property="og:site_name" content="Misaka10148">
+<meta property="og:description" content="这篇文章是关于如何基于Azerothcore部署wow_wlk335的分享。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://solitude.js.org/assets/blog/WoW/wow.gif">
+<meta property="article:published_time" content="2026-02-24T05:25:32.000Z">
+<meta property="article:modified_time" content="2026-02-28T06:39:21.253Z">
+<meta property="article:author" content="Misaka10148">
+<meta property="article:tag" content="WoW-WLK">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://solitude.js.org/assets/blog/WoW/wow.gif"><!-- pwa--><meta name="apple-mobile-web-app-capable" content="Misaka10148"><meta name="theme-color" content="var(--efu-main)"><meta name="apple-mobile-web-app-status-bar-style" content="var(--efu-main)"><link rel="bookmark" href="/assets/icon.png"><link rel="apple-touch-icon" href="/assets/icon.png" sizes="180x180"><script>console.log(' %c Solitude %c ' + '3.0.15' + ' %c https://github.com/everfu/hexo-theme-solitude',
+    'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+    'background:#ff9a9a ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff',
+    'background:unset ; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff')
+</script><script>let mdate = "5-12,7-7,9-18";
+mdate = (mdate.split(","));
+let ndate = new Date();
+for (let i of mdate) {
+    if (i === (ndate.getMonth()+1) + "-" + (ndate.getDate())) {
+        document.documentElement.classList.add('memorial');
+    }
+}
+</script><link rel='stylesheet' href='https://chinese-fonts-cdn.deno.dev/packages/lywkpmydb/dist/LXGWWenKaiScreen/result.css' /><link rel="stylesheet" href="/css/schedule.css"><script src="https://npm.elemecdn.com/echarts@4.9.0/dist/echarts.min.js"></script><script>(()=>{
+        const saveToLocal = {
+            set: function setWithExpiry(key, value, ttl) {
+                if (ttl === 0)
+                    return
+                const now = new Date()
+                const expiryDay = ttl * 86400000
+                const item = {
+                    value: value,
+                    expiry: now.getTime() + expiryDay
+                }
+                localStorage.setItem(key, JSON.stringify(item))
+            },
+            get: function getWithExpiry(key) {
+                const itemStr = localStorage.getItem(key)
+
+                if (!itemStr) {
+                    return undefined
+                }
+                const item = JSON.parse(itemStr)
+                const now = new Date()
+
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key)
+                    return undefined
+                }
+                return item.value
+            }
+        };
+        window.utils = {
+            saveToLocal: saveToLocal,
+            getCSS: (url, id = false) => new Promise((resolve, reject) => {
+              const link = document.createElement('link')
+              link.rel = 'stylesheet'
+              link.href = url
+              if (id) link.id = id
+              link.onerror = reject
+              link.onload = link.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                link.onload = link.onreadystatechange = null
+                resolve()
+              }
+              document.head.appendChild(link)
+            }),
+            getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+              const script = document.createElement('script')
+              script.src = url
+              script.async = true
+              script.onerror = reject
+              script.onload = script.onreadystatechange = function() {
+                const loadState = this.readyState
+                if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+                script.onload = script.onreadystatechange = null
+                resolve()
+              }
+
+              Object.keys(attr).forEach(key => {
+                script.setAttribute(key, attr[key])
+              })
+
+              document.head.appendChild(script)
+            }),
+            addGlobalFn: (key, fn, name = false, parent = window) => {
+                const globalFn = parent.globalFn || {}
+                const keyObj = globalFn[key] || {}
+
+                if (name && keyObj[name]) return
+
+                name = name || Object.keys(keyObj).length
+                keyObj[name] = fn
+                globalFn[key] = keyObj
+                parent.globalFn = globalFn
+            },
+            addEventListenerPjax: (ele, event, fn, option = false) => {
+              ele.addEventListener(event, fn, option)
+              utils.addGlobalFn('pjax', () => {
+                  ele.removeEventListener(event, fn, option)
+              })
+          },
+        }
+    })()</script><!-- theme--><script>initTheme = () => {
+    let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const cachedMode = utils.saveToLocal.get('theme');
+    if (cachedMode === undefined) {
+        const nowMode =
+            isDarkMode ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', nowMode);
+    } else {
+        document.documentElement.setAttribute('data-theme', cachedMode);
+    }
+    typeof rm === 'object' && rm.mode(cachedMode === 'dark' && isDarkMode)
+}
+initTheme()</script><!-- global head--><script>const GLOBAL_CONFIG = {
+    root: '/',
+    algolia: undefined,
+    localsearch: undefined,
+    runtime: '2020-01-22 18:23:46',
+    lazyload: {
+        enable: false,
+        error: '/img/error_load.avif'
+    },
+    copyright: false,
+    highlight: {"limit":200,"expand":true,"copy":true,"syntax":"highlight.js"},
+    randomlink: true,
+    lang: {"theme":{"dark":"已切换至深色模式","light":"已切换至浅色模式"},"copy":{"success":"复制成功","error":"复制失败"},"backtop":"返回顶部","time":{"day":"天前","hour":"小时前","just":"刚刚","min":"分钟前","month":"个月前"},"day":" 天","f12":"开发者模式已打开，请遵循GPL协议。","totalk":"无需删除空行，直接输入评论即可","search":{"empty":"找不到你查询的内容：${query}","hit":"找到 ${hits} 条结果，用时 ${time} 毫秒","placeholder":"输入关键词快速查找","count":"共 <b>${count}</b> 条结果。","loading":"搜索中..."}},
+    aside: {
+        state: {
+            morning: "✨ 早上好，新的一天开始了",
+            noon: "🍲 午餐时间",
+            afternoon: "🌞 下午好",
+            night: "早点休息",
+            goodnight: "晚安 😴",
+        },
+        witty_words: ["人生没有白走的路，每一步都算数。","是金子总会发光，是石头总会碰撞。","我们都是孤独的旅行者。"],
+        witty_comment: {
+            prefix: '好久不见，',
+            back: '欢迎再次回来，',
+        },
+    },
+    covercolor: {
+        enable: true
+    },
+    comment: false,
+    lightbox: 'fancybox',
+    right_menu: {"mode":{"dark":"深色模式","light":"浅色模式"},"img_error":"此图片无法复制与下载","music":{"start":"播放音乐","stop":"暂停音乐"},"translate":true,"ctrlOriginalMenu":"按住Ctrl+右键可打开浏览器右键菜单"},
+    translate: {"translateDelay":0,"defaultEncoding":2},
+    lure: false,
+    expire: false,
+};</script><!-- page-config head--><script id="config-diff">var PAGE_CONFIG = {
+    is_post: true,
+    is_page: false,
+    is_home: false,
+    page: '',
+    toc: true,
+    comment: false,
+    ai_text: false,
+    color: false,
+}</script><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Misaka10148" type="application/atom+xml">
+</head><body id="body"><!-- universe--><canvas id="universe"></canvas><!-- background img--><div id="global_bg"></div><!-- loading--><!-- console--><div id="console"><div class="close-btn" onclick="sco.hideConsole()"><i class="solitude fas fa-xmark"></i></div><div class="console-card-group"><div class="console-card-group-right"><div class="console-card history" onclick="sco.hideConsole()"><ul class="card-archive-list"><li class="item"><a href="/archives/2026/02/"><span class="date">2026/02</span><div class="count-group"><span class="count">4</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2025/03/"><span class="date">2025/03</span><div class="count-group"><span class="count">2</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2020/04/"><span class="date">2020/04</span><div class="count-group"><span class="count">2</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/2020/03/"><span class="date">2020/03</span><div class="count-group"><span class="count">4</span><span class="unit">篇</span></div></a></li><li class="item"><a href="/archives/"><span class="date">全部文章</span><div class="count-group"><span class="count">12</span><span class="unit">篇</span></div></a></li></ul></div></div></div><div class="button-group"><div class="console-btn-item"><span class="darkmode_switchbutton" onclick="sco.switchDarkMode()" title="昼夜切换"><i class="solitude fas fa-circle-half-stroke"></i></span></div><div class="console-btn-item" id="consoleHideAside"><span class="asideSwitch" onclick="sco.switchHideAside()" title="边栏显示控制"><i class="solitude fas fa-arrows-left-right-to-line"></i></span></div><div class="console-btn-item" id="consoleMusic" onclick="sco.musicToggle()"><span class="music-switch" title="音乐开关"><i class="solitude fas fa-compact-disc"></i></span></div></div><div class="console-mask" onclick="sco.hideConsole()"></div></div><!-- sidebar--><div id="sidebar" style="zoom: 1;"><div id="menu-mask" style="display: none;"></div><div id="sidebar-menus"><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">12</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a></div></div></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><span class="darkmode_switchbutton menu-child" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span>显示模式</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><span>文章</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  fas fa-folder-closed"></i><span>隧道</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  fas fa-clone"></i><span>分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  fas fa-tags"></i><span>标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/music/"><span>歌单</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><span>我的</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  fas fa-user"></i><span>关于本站</span></a></li><li><a class="site-page child" href="/links/"><i class="solitude  fas fa-link"></i><span>友情链接</span></a></li><li><a class="site-page child" href="/gallery/"><i class="solitude  fas fa-images"></i><span>时光留影</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="card-tag-cloud"><a href="/tags/C-%E5%88%9D%E7%BA%A7/">C#初级<sup>1</sup></a><a href="/tags/C-%E5%9F%BA%E7%A1%80/">C#基础<sup>2</sup></a><a href="/tags/solitude/">solitude<sup>1</sup></a><a href="/tags/WoW/">WoW<sup>3</sup></a><a href="/tags/%E8%81%8C%E5%9C%BA/">职场<sup>1</sup></a><a href="/tags/WoW-WLK/">WoW-WLK<sup>1</sup></a><a href="/tags/C-%E6%A0%B8%E5%BF%83/">C#核心<sup>3</sup></a></div></div><span class="sidebar-menu-item-title">网站信息</span><div class="webinfo"><div class="webinfo-item"><div class="item-name">全站字数 :</div><div class="item-count">34.3k</div></div></div></div></div><!-- keyboard--><!-- righhtside--><div class="needEndHide" id="rightside"><div class="rs_hide"><button class="translate" type="button" title="简繁转换">简</button><button class="mode" type="button" title="显示模式切换" onclick="sco.switchDarkMode()"><i class="fas fa-circle-half-stroke"></i></button></div><div class="rs_show"><button class="config" type="button" title="扩展" onclick="document.querySelector(&quot;.rs_hide&quot;).classList.toggle(&quot;show&quot;)"><i class="fas fa-gear fa-spin"></i></button><button class="mobile toc" type="button" title="目录" onclick="document.querySelector('#card-toc').classList.toggle('open')"><i class="fas fa-list"></i></button><button class="top" type="button" title="返回顶部" onclick="sco.toTop()"><i class="fas fa-arrow-up"></i><span id="percent">0</span></button></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav class="show" id="nav"><div id="nav-group"><div id="blog_name"><a id="site-name" href="/" title="返回博客主页"><span class="title">Misaka10148</span><i class="solitude fas fa-home"></i></a></div><div id="page-name-mask"><div id="page-name"><a id="page-name-text" onclick="sco.toTop()">WoW-WLK335部署(基于Azerothcore)</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><span>文章</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="solitude  fas fa-folder-closed"></i><span>隧道</span></a></li><li><a class="site-page child" href="/categories/"><i class="solitude  fas fa-clone"></i><span>分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="solitude  fas fa-tags"></i><span>标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/music/"><span>歌单</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><span>我的</span></a><ul class="menus_item_child"><li><a class="site-page child" href="/about/"><i class="solitude  fas fa-user"></i><span>关于本站</span></a></li><li><a class="site-page child" href="/links/"><i class="solitude  fas fa-link"></i><span>友情链接</span></a></li><li><a class="site-page child" href="/gallery/"><i class="solitude  fas fa-images"></i><span>时光留影</span></a></li></ul></div></div></div><div id="nav-left"></div><div id="nav-right"><div class="nav-button" id="randomPost_button"><a class="site-page" onclick="toRandomPost()" title="随机一篇文章" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="solitude fas fa-dice-d6"></i></a></div><div class="nav-button" id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" rel="external nofollow noreferrer" title="搜索"><i class="solitude fas fa-magnifying-glass"></i></a></div><div class="nav-button" id="nav-console"><a class="console_switchbutton" onclick="sco.showConsole()" title="中控台" href="javascript:void(0);" rel="external nofollow noreferrer"><label><i class="left"></i><i class="center"></i><i class="right"></i></label></a></div><div id="toggle-menu"><a class="site-page"><i class="solitude fas fa-bars"></i></a></div></div></div></nav><div class="coverdiv" id="coverdiv"><img class="nolazyload" id="post-cover" src="/assets/blog/WoW/wow.gif" alt="WoW-WLK335部署(基于Azerothcore)"></div><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original" title="该文章为原创文章，注意版权协议">原创</a><span class="post-meta-categories"><a class="post-meta-categories" href="/categories/WoW/">WoW</a></span><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/WoW-WLK/"><span class="tags-name tags-punctuation"><i class="solitude fas fa-hashtag"></i>WoW-WLK</span></a></div></div></div></div><h1 class="post-title">WoW-WLK335部署(基于Azerothcore)</h1><div id="post-meta"><div class="meta-secondline"><span class="post-meta-date" title="发布于 2026-02-24 13:25:32"><i class="post-meta-icon solitude fas fa-calendar-days"></i><time datetime="2026-02-24T05:25:32.000Z">2026-02-24T05:25:32.000Z</time></span><span class="post-meta-date" title="最后更新于 2026-02-28 14:39:21"><i class="post-meta-icon solitude fas fa-arrows-rotate"></i><time datetime="2026-02-28T06:39:21.253Z">2026-02-28T06:39:21.253Z</time></span><span class="post-meta-wordcount"><i class="post-meta-icon solitude fas fa-file-word" title="文章字数"></i><span class="word-count">2k</span><span class="post-meta-separator"></span><i class="post-meta-icon solitude fas fa-clock" title="阅读耗时"></i><span>8 分钟</span></span><span class="post-meta-position" title="作者IP归属地为中国"><i class="post-meta-icon solitude fas fa-location-dot"></i><span>中国</span></span></div></div></div><div id="post-info-bottom"></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content article-container"><h2 id="Azerothcore">Azerothcore</h2>
+<p>Azerothcore是一个基于MaNGOS的开源项目，它的目标是提供一个高度可定制的魔兽世界服务器端。Azerothcore的代码仓库可以在<a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/azerothcore/azerothcore-wotlk">这里</a>找到。</p>
+<h2 id="1-依赖准备">1.依赖准备</h2>
+<table>
+<thead>
+<tr>
+<th>依赖项</th>
+<th>版本要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boost</td>
+<td>≥ 1.78</td>
+</tr>
+<tr>
+<td>MySQL</td>
+<td>≥ 5.7.0</td>
+</tr>
+<tr>
+<td>OpenSSL</td>
+<td>≥ 1.0.x</td>
+</tr>
+<tr>
+<td>CMake</td>
+<td>≥ 3.16</td>
+</tr>
+<tr>
+<td>MS Visual Studio (Community)</td>
+<td>≥ 17 (2022)（桌面版）（非预览）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1-1Git">1.1<a target="_blank" rel="noopener external nofollow noreferrer" href="https://git-scm.com/install/windows">Git</a></h3>
+<p>在 Git 安装过程中 —— 调整 PATH 环境。选择<code>&quot;Git from the command line and also from 3rd-party software&quot;</code>选项，确保 Git 命令可以在命令行中直接使用。</p>
+<h3 id="1-2Github-桌面">1.2<a target="_blank" rel="noopener external nofollow noreferrer" href="https://desktop.github.com/download/">Github 桌面</a></h3>
+<p>下载安装程序并按步骤进行设置。</p>
+<h3 id="1-3Visual-Studio">1.3<a target="_blank" rel="noopener external nofollow noreferrer" href="https://visualstudio.microsoft.com/zh-hans/downloads/">Visual Studio</a></h3>
+<p>安装编译器/集成开发环境，安装时必须在工作负荷(Workloads)-&gt; 桌面应用和移动应用(Desktop &amp; Mobile) 下选择 使用C++的桌面开发(Desktop development for C++)。</p>
+<h3 id="1-4MySQL-推荐使用5-7版本，不要用8-0">1.4<a target="_blank" rel="noopener external nofollow noreferrer" href="https://dev.mysql.com/downloads/installer/">MySQL</a>(推荐使用5.7版本，不要用8.0)</h3>
+<p>下载安装程序并按步骤进行安装和设置，确保将MySQL添加到环境变量。</p>
+<h3 id="1-5OpenSSL-3-0-x-Win64-OpenSSL，非-精简-light-版">1.5<a target="_blank" rel="noopener external nofollow noreferrer" href="https://slproweb.com/products/Win32OpenSSL.html">OpenSSL</a>(3.0.x Win64 OpenSSL，非 &quot;精简(light)&quot;版)</h3>
+<p>安装 OpenSSL 时，在选择复制 OpenSSL DLL 的位置时，请选择 OpenSSL 二进制文件 (/bin) 目录。</p>
+<h3 id="1-6CMake-x64版本，不要使用RC-候选发布-版本">1.6<a target="_blank" rel="noopener external nofollow noreferrer" href="https://cmake.org/download/">CMake</a>(x64版本，不要使用RC(候选发布)版本)</h3>
+<p>下载安装程序并按步骤进行安装和设置，确保将CMake添加到环境变量。</p>
+<h3 id="1-7Boost-预编译的Windows二进制程序-Binary">1.7<a target="_blank" rel="noopener external nofollow noreferrer" href="https://www.boost.org/users/download/">Boost</a>(预编译的Windows二进制程序(Binary))</h3>
+<p>在 &quot;系统变量&quot;中新建一个名为 &quot;BOOST_ROOT &quot;的环境变量，并将 Boost 安装目录作为变量值，例如 C:/local/boost_1_90_0。重要的是，指向目录时要<code>使用&quot;/&quot;，而不是&quot;\&quot;</code>。确保没有路径末尾斜线。</p>
+<h2 id="2-部署Azerothcore">2.部署Azerothcore</h2>
+<h3 id="2-1-克隆Azerothcore仓库">2.1 克隆Azerothcore仓库</h3>
+<p>打开 Github 桌面应用，点击 “文件” -&gt; “克隆仓库”。在 “URL” 字段中输入 <code>https://github.com/azerothcore/azerothcore-wotlk.git</code>，选择一个本地目录来存储仓库，然后点击 “克隆”。</p>
+<p>或者直接使用命令行克隆仓库：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/azerothcore/azerothcore-wotlk.git</span><br></pre></td></tr></table></figure>
+<h3 id="2-2-使用-CMake-配置和生成-Visual-C-解决方案">2.2 使用 CMake 配置和生成 Visual C++ 解决方案</h3>
+<ul>
+<li>1.打开 CMake 应用，点击 “浏览源代码…（Browse Source…）” → 选择Azerothcore源代码目录</li>
+<li>2.点击 “浏览构建…（Browse Build…）” → 选择Azerothcore构建目录</li>
+<li>3.点击 “配置(Configure)” 按钮，选择 <code>1.3</code>中下载安装的编译器（如Visual Studio 17 2022）作为生成器，如果使用的是 64 位编译器，请务必选择 Win64 版本。</li>
+<li>4.确保勾选了使用默认本地编译器（Use default native compilers）</li>
+<li>5.确保 TOOLS_BUILD 设置为 all。这将编译稍后设置中所需的提取器。</li>
+<li>6.单击生成（Generate）。将生成 Visual C++ 解决方案文件到<code>2</code>中选择的构建目录</li>
+</ul>
+<h3 id="2-3-CMake-配置常见错误及解决方案">2.3 CMake 配置常见错误及解决方案</h3>
+<h4 id="MySQL-相关错误">MySQL 相关错误</h4>
+<ul>
+<li>
+<p><strong>CMake 未找到 MySQL</strong>：</p>
+<ul>
+<li>需要设置 <code>MYSQL_INCLUDE_DIR = C:/XX/MySQL/MySQL Server X.X/include</code> 和 <code>MYSQL_LIBRARY = C:/XX/MySQL/MySQL Server X.X/lib(_XX)/libmysql.lib</code></li>
+<li>XX 取决于使用的 MySQL 版本</li>
+<li>如果在 CMake 中未看到 MYSQL 字段，请勾选 “高级” 复选框</li>
+</ul>
+</li>
+<li>
+<p><strong>链接器错误</strong>（例如 “error LNK2019: unresolved external symbol mysql_server_init”）：</p>
+<ul>
+<li>确保 MYSQL_LIBRARY 设置为与编译模式（x64 与 32 位）相匹配的 libmysql.lib</li>
+</ul>
+</li>
+</ul>
+<h4 id="OpenSSL-相关错误">OpenSSL 相关错误</h4>
+<ul>
+<li><strong>CMake 无法找到 OpenSSL</strong>：
+<ol>
+<li>选中高级（Advanced）复选框</li>
+<li>在列表中找到两个 OPENSSL 条目，并指向正确的目录：
+<ul>
+<li><code>OPENSSL_ROOT_DIR</code> 是安装路径（默认为 C:/OpenSSL-Win32 或 C:/OpenSSL-Win64）</li>
+<li><code>OPENSSL_INCLUDE_DIR</code> 是安装路径中的 “include” 文件夹（默认为 C:/OpenSSL-Win32/include 或 C:/OpenSSL-Win64/include）</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<h4 id="Boost-相关错误">Boost 相关错误</h4>
+<ul>
+<li><strong>CMake 无法找到 Boost</strong>（例如 “Could NOT find Boost (missing: system filesystem program_options iostreams regex)”）：
+<ol>
+<li>找到你的 Boost 文件夹</li>
+<li>运行 <code>Bootstrap.bat</code> 文件</li>
+<li>运行 <code>b2.exe</code> 文件</li>
+</ol>
+</li>
+</ul>
+<h4 id="Git-相关错误">Git 相关错误</h4>
+<ul>
+<li><strong>系统上未找到 Git</strong>：
+<ol>
+<li>选中高级（Advanced）复选框</li>
+<li>搜索并找到 <code>GIT_EXECUTABLE</code></li>
+<li>指定 git.exe 的路径，例如 <code>C:/Program Files/Git/cmd/git.exe</code></li>
+<li>如果没有 git.exe，则需要安装 git（参阅要求）</li>
+</ol>
+</li>
+</ul>
+<h3 id="2-4-编译源代码">2.4 编译源代码</h3>
+<ul>
+<li>1.在 CMake 中打开项目（Open Project），直接用 Visual Studio 打开 AzerothCore.sln 文件。</li>
+<li>2.在 Visual Studio 顶部菜单中单击构建（Build），然后选择配置管理器（Configuration Manager）。</li>
+<li>3.顶部菜单中单击构建（Build），然后选择配置管理器（Configuration Manager）。</li>
+<li>4.在&quot;帮助&quot;下面的列表菜单中，将活动解决方案配置（Active Solution Configuration）平台设置为 x64(如果在 CMake 配置过程中设置了 32 位编译，请选择 x86)，然后单击关闭（设置自动保存）。</li>
+<li>5.在右侧边栏的&quot;解决方案资源管理器&quot;中右键单击 ALL_BUILD，然后选择清理（Clean）。</li>
+<li>6.右键单击 ALL_BUILD，然后选择构建（Build）。</li>
+</ul>
+<p>如果你的图形用户界面未显示解决方案资源管理器，请单击&quot;构建&quot;菜单并选择清理解决方案（Clean Solution），然后选择构建（Build）。<br>
+编译完成后，你会在输出中看到类似下面的信息：</p>
+<p>========== Build: 22 succeeded, 0 failed, 0 up-to-date, 1 skipped==========</p>
+<p>在构建目录中的 <code>bin\RelWithDebInfo</code>或<code>bin\Debug</code> 文件夹(取决于使用Visual Studio时选择的构建类型是RelWithDebInfo还是Debug)，可以找到新编译的二进制文件。<br>
+为了让核心正常运行，还需要以下文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">\configs\</span><br><span class="line">authserver.exe</span><br><span class="line">authserver.pbd</span><br><span class="line">worldserver.exe</span><br><span class="line">worldserver.pdb</span><br><span class="line">libmysql.dll</span><br><span class="line"></span><br><span class="line">---------</span><br><span class="line">For OpenSSL 1.1.x</span><br><span class="line">libeay32.dll / libcrypto-1_1.dll / libcrypto-1_1-x64.dll</span><br><span class="line">ssleay32.dll / libssl-1_1.dll / libssl-1_1-x64.dll</span><br><span class="line"></span><br><span class="line">---------</span><br><span class="line">For OpenSSL 3.0 and later</span><br><span class="line"></span><br><span class="line">legacy.dll</span><br><span class="line">libcrypto-3.dll / libcrypto-3-x64.dll</span><br><span class="line">libssl-3.dll / libssl-3-x64.dll</span><br></pre></td></tr></table></figure>
+<p>有两个/三个 DLL 文件需要手动添加到这个文件夹中，需要从以下安装目录中复制它们：</p>
+<p><strong>libmysql.dll</strong> → C:\Program Files\MySQL\MySQL Server 8.x\lib\libmysql.dll</p>
+<p>注意：需要 libmysql 的准确版本来对应你载的 MySQL。因此，不能从网上下载 DLL，需要从mysql文件夹中提取。</p>
+<p><strong>版本 1.1.0 之前的 OpenSSL：</strong></p>
+<p><strong>libeay32.dll</strong> 和 <strong>ssleay32.dll</strong> → C:\OpenSSL-Win64\ 或 C:\OpenSSL-Win32\ （取决于你的核心是 64 位还是 32 位）。</p>
+<p><strong>OpenSSL 1.1.x 名称已更改：</strong></p>
+<p>对于 32 位版本：<strong>libssl-1_1.dll</strong> 和 <strong>libcrypto-1_1.dll</strong> → C:\OpenSSL-Win32\bin</p>
+<p>对于 64 位版本：<strong>libssl-1_1-x64.dll</strong> 和 <strong>libcrypto-1_1-x64.dll</strong> → C:\OpenSSL-Win64\bin</p>
+<p><strong>OpenSSL 3.0 及以上版本时：</strong></p>
+<p><strong>legacy.dll</strong> → C:\OpenSSL-Win(32/64)\bin</p>
+<p>对于 32 位版本：<strong>libcrypto-3.dll</strong> 和 <strong>libssl-3.dll</strong> → C:\OpenSSL-Win32\bin</p>
+<p>对于 64 位版本：<strong>libcrypto-3-x64.dll</strong> 和 <strong>libssl-3-x64.dll</strong> → C:\OpenSSL-Win64\bin</p>
+<p>至此服务端的核心编译完成，如想魔改服务端核心，应在AzerothCore的源代码目录中进行修改，然后使用CMake重新生成Visual Studio项目文件再重新编译。</p>
+<h2 id="3-服务端配置">3. 服务端配置</h2>
+<h3 id="3-1-提取-DBC-Maps-VMaps-和-MMaps文件">3.1 提取 DBC, Maps, VMaps 和 MMaps文件</h3>
+<ol>
+<li>
+<p><strong>复制提取工具到客户端文件夹</strong></p>
+<ul>
+<li>浏览到编译生成的服务端目录，即 <code>bin\RelWithDebInfo</code> 或 <code>bin\Debug</code> 文件夹</li>
+<li>将以下文件复制到魔兽世界客户端文件夹（wow.exe 所在的位置）：
+<ul>
+<li><code>map_extractor.exe</code></li>
+<li><code>mmaps_generator.exe</code></li>
+<li><code>vmap4_extractor.exe</code></li>
+<li><code>vmap4_assembler.exe</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>复制提取脚本</strong></p>
+<ul>
+<li>在 <code>azerothcore-wotlk</code> 源代码目录中的 <code>apps\extractor</code> 文件夹找到 <code>extractor.bat</code> 批处理脚本</li>
+<li>将该脚本放到上述客户端文件夹</li>
+</ul>
+</li>
+<li>
+<p><strong>执行提取过程</strong></p>
+<ul>
+<li>启动 <code>extractor.bat</code> 脚本，选择提取选项</li>
+<li><strong>重要提示</strong>：
+<ul>
+<li>要使服务器正常工作，需要 <strong>dbc、maps</strong> 和 <strong>vmaps</strong> ！</li>
+<li>不要试图停止 <strong>vmaps</strong> 提取过程。当控制台打印出 &quot;按任意键…（Press any key…）&quot;时，该过程就结束了。</li>
+<li>它会创建两个新文件夹：<code>buildings</code> 和 <code>vmaps</code>。提取时临时生成的 <code>buildings</code> 文件夹在运行后完全无用，可以安全删除。</li>
+<li>在第一个任务完成之前不要运行另一个任务，否则会出错。</li>
+<li>如果在完成前停止 vmap4extractor，则需要在再次启动前删除 <code>Buildings</code> 目录。</li>
+<li><strong>可选但极力推荐：提取 mmaps</strong>。在提取过程中，不要试图停止该进程。</li>
+</ul>
+</li>
+<li><strong>完成后操作</strong>：
+<ul>
+<li>在 <code>bin\RelWithDebInfo</code> 或 <code>bin\Debug</code> 文件夹中新建一个名为 <strong>Data</strong> 的文件夹</li>
+<li>将 <code>vmaps、maps、dbc、mmaps</code> 文件夹移到 <strong>Data</strong> 文件夹中</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author_group"><div class="post-copyright__author_img"><img class="post-copyright__author_img_front" src="/assets/layout/avatar.jpg"></div><div class="post-copyright__author_name">Misaka10148</div><div class="post-copyright__author_desc">个人博客</div></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div id="quit-box" onclick="RemoveRewardMask()"></div></div></div><div class="social-share"><a class="social-share-ico icon-qq" target="_blank" rel="noopener external nofollow noreferrer" href="https://connect.qq.com/widget/shareqq/index.html?url=https%3A%2F%2Fsolitude.js.org%2Fposts%2Fwow_wlk_Azerothcore.html&amp;title=WoW-WLK335%E9%83%A8%E7%BD%B2(%E5%9F%BA%E4%BA%8EAzerothcore)&amp;desc=%E8%BF%99%E7%AF%87%E6%96%87%E7%AB%A0%E6%98%AF%E5%85%B3%E4%BA%8E%E5%A6%82%E4%BD%95%E5%9F%BA%E4%BA%8EAzerothcore%E9%83%A8%E7%BD%B2wow_wlk335%E7%9A%84%E5%88%86%E4%BA%AB%E3%80%82&amp;summary=%E8%BF%99%E7%AF%87%E6%96%87%E7%AB%A0%E6%98%AF%E5%85%B3%E4%BA%8E%E5%A6%82%E4%BD%95%E5%9F%BA%E4%BA%8EAzerothcore%E9%83%A8%E7%BD%B2wow_wlk335%E7%9A%84%E5%88%86%E4%BA%AB%E3%80%82&amp;site=WoW-WLK335%E9%83%A8%E7%BD%B2(%E5%9F%BA%E4%BA%8EAzerothcore)&amp;pics=%2Fassets%2Fblog%2FWoW%2Fwow.gif" title="分享到QQ"><i class="solitude fab fa-qq"></i></a><a class="social-share-ico icon-weibo" target="_blank" rel="noopener external nofollow noreferrer" href="http://service.weibo.com/share/share.php?url=https%3A%2F%2Fsolitude.js.org%2Fposts%2Fwow_wlk_Azerothcore.html&amp;title=WoW-WLK335%E9%83%A8%E7%BD%B2(%E5%9F%BA%E4%BA%8EAzerothcore)&amp;pic=%2Fassets%2Fblog%2FWoW%2Fwow.gif" title="分享到微博"><i class="solitude fab fa-weibo"></i></a><a class="social-share-ico icon-twitter" target="_blank" rel="noopener external nofollow noreferrer" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fsolitude.js.org%2Fposts%2Fwow_wlk_Azerothcore.html&amp;text=WoW-WLK335%E9%83%A8%E7%BD%B2(%E5%9F%BA%E4%BA%8EAzerothcore)" title="分享到Twitter"><i class="solitude fab fa-twitter"></i></a><a class="social-share-ico icon-telegram" target="_blank" rel="noopener external nofollow noreferrer" href="https://t.me/share/url?url=https%3A%2F%2Fsolitude.js.org%2Fposts%2Fwow_wlk_Azerothcore.html&amp;text=WoW-WLK335%E9%83%A8%E7%BD%B2(%E5%9F%BA%E4%BA%8EAzerothcore)" title="分享到Telegram"><i class="solitude fab fa-telegram"></i></a><div class="social-share-ico icon-link" onclick="utils.copy(&quot;https://solitude.js.org/posts/wow_wlk_Azerothcore.html&quot;)" title="复制文章链接"><i class="solitude fas fa-link"></i></div><div class="social-share-ico icon-qrcode" title="使用手机扫码阅读这篇文章"><i class="solitude fas fa-qrcode"></i><div class="share-main"><div class="share-main-all"><div id="qrcode"></div><div class="reward-dec">使用手机扫码阅读这篇文章</div></div></div><script pjax>typeof QRCode === 'function' && new QRCode(document.getElementById("qrcode"), {
+    text: 'https://solitude.js.org/posts/wow_wlk_Azerothcore.html',
+    correctLevel : QRCode.CorrectLevel.L
+});
+window.addEventListener('DOMContentLoaded', () => {
+    new QRCode(document.getElementById("qrcode"), {
+        text: 'https://solitude.js.org/posts/wow_wlk_Azerothcore.html',
+        correctLevel : QRCode.CorrectLevel.L
+    });
+});
+</script></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本文是原创文章，采用<a target="_blank" rel="noopener external nofollow noreferrer" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans">CC BY-NC-SA 4.0</a>协议，完整转载请注明来自<a href="/">Misaka10148</a></span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/WoW-WLK/"><span class="tags-punctuation"><i class="solitude fas fa-hashtag"></i>WoW-WLK<span class="tagsPageCount">1</span></span></a></div></div></div><nav class="needEndHide pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/wow_MaNGOS.html"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">WoW1.12部署(基于MaNGOS)</div></div></a></div><div class="next-post pull-right"><a href="/posts/1.html"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">技术岗位如何写简历（转）</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info" style="background: url('/assets/layout/home/info.jpg') no-repeat center center/cover;"><div class="card-content"><div class="card-info-avatar is-center"><div class="top-group"><div class="sayhi" id="sayhi" onclick="sco.changeWittyWord()"></div></div></div><div class="avatar"><img alt="头像" src="/assets/layout/avatar.jpg"><div class="sticker"><img class="sticker-img" src="/assets/layout/avatar.jpg" alt="心情贴纸"></div></div><div class="description">这是一个普通的程序员，但有一个不平凡的梦想，希望能够改变世界。</div><div class="bottom-group"><span class="left"><div class="name">Misaka10148</div><div class="desc"><span id="jinrishici-sentence"></span></div></span><div class="social-icons is-center"><a class="social-icon" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Misaka10148" title="Github"><i class="solitude  fab fa-github"></i></a><a class="social-icon" target="_blank" rel="noopener external nofollow noreferrer" href="https://twitter.com" title="Telegram"><i class="solitude  fab fa-telegram"></i></a></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="solitude fas fa-bars"></i><span>文章目录</span></div><div class="toc-content" id="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Azerothcore"><span class="toc-text">Azerothcore</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BE%9D%E8%B5%96%E5%87%86%E5%A4%87"><span class="toc-text">1.依赖准备</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1Git"><span class="toc-text">1.1Git</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2Github-%E6%A1%8C%E9%9D%A2"><span class="toc-text">1.2Github 桌面</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3Visual-Studio"><span class="toc-text">1.3Visual Studio</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4MySQL-%E6%8E%A8%E8%8D%90%E4%BD%BF%E7%94%A85-7%E7%89%88%E6%9C%AC%EF%BC%8C%E4%B8%8D%E8%A6%81%E7%94%A88-0"><span class="toc-text">1.4MySQL(推荐使用5.7版本，不要用8.0)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5OpenSSL-3-0-x-Win64-OpenSSL%EF%BC%8C%E9%9D%9E-%E7%B2%BE%E7%AE%80-light-%E7%89%88"><span class="toc-text">1.5OpenSSL(3.0.x Win64 OpenSSL，非 &quot;精简(light)&quot;版)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6CMake-x64%E7%89%88%E6%9C%AC%EF%BC%8C%E4%B8%8D%E8%A6%81%E4%BD%BF%E7%94%A8RC-%E5%80%99%E9%80%89%E5%8F%91%E5%B8%83-%E7%89%88%E6%9C%AC"><span class="toc-text">1.6CMake(x64版本，不要使用RC(候选发布)版本)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-7Boost-%E9%A2%84%E7%BC%96%E8%AF%91%E7%9A%84Windows%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%A8%8B%E5%BA%8F-Binary"><span class="toc-text">1.7Boost(预编译的Windows二进制程序(Binary))</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%83%A8%E7%BD%B2Azerothcore"><span class="toc-text">2.部署Azerothcore</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%85%8B%E9%9A%86Azerothcore%E4%BB%93%E5%BA%93"><span class="toc-text">2.1 克隆Azerothcore仓库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%BD%BF%E7%94%A8-CMake-%E9%85%8D%E7%BD%AE%E5%92%8C%E7%94%9F%E6%88%90-Visual-C-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">2.2 使用 CMake 配置和生成 Visual C++ 解决方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-CMake-%E9%85%8D%E7%BD%AE%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">2.3 CMake 配置常见错误及解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#MySQL-%E7%9B%B8%E5%85%B3%E9%94%99%E8%AF%AF"><span class="toc-text">MySQL 相关错误</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#OpenSSL-%E7%9B%B8%E5%85%B3%E9%94%99%E8%AF%AF"><span class="toc-text">OpenSSL 相关错误</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Boost-%E7%9B%B8%E5%85%B3%E9%94%99%E8%AF%AF"><span class="toc-text">Boost 相关错误</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Git-%E7%9B%B8%E5%85%B3%E9%94%99%E8%AF%AF"><span class="toc-text">Git 相关错误</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E7%BC%96%E8%AF%91%E6%BA%90%E4%BB%A3%E7%A0%81"><span class="toc-text">2.4 编译源代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%85%8D%E7%BD%AE"><span class="toc-text">3. 服务端配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%8F%90%E5%8F%96-DBC-Maps-VMaps-%E5%92%8C-MMaps%E6%96%87%E4%BB%B6"><span class="toc-text">3.1 提取 DBC, Maps, VMaps 和 MMaps文件</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="solitude fas fa-map"></i><span>最近发布</span></div><div class="aside-list"><a class="aside-list-item" href="/posts/wow_gm.html" title="GM命令"><div class="thumbnail"><img alt="GM命令" src="/assets/blog/WoW/wow.gif"></div><div class="content"><span class="title" href="/posts/wow_gm.html" title="GM命令">GM命令</span><span class="categories" href="/posts/wow_gm.html">WoW</span></div></a><a class="aside-list-item" href="/posts/wow_01.html" title="魔改日记(一)"><div class="thumbnail"><img alt="魔改日记(一)" src="/assets/blog/WoW/wow.gif"></div><div class="content"><span class="title" href="/posts/wow_01.html" title="魔改日记(一)">魔改日记(一)</span><span class="categories" href="/posts/wow_01.html">WoW</span></div></a><a class="aside-list-item" href="/posts/wow_MaNGOS.html" title="WoW1.12部署(基于MaNGOS)"><div class="thumbnail"><img alt="WoW1.12部署(基于MaNGOS)" src="/assets/blog/WoW/wow.gif"></div><div class="content"><span class="title" href="/posts/wow_MaNGOS.html" title="WoW1.12部署(基于MaNGOS)">WoW1.12部署(基于MaNGOS)</span><span class="categories" href="/posts/wow_MaNGOS.html">WoW</span></div></a><a class="aside-list-item" href="/posts/wow_wlk_Azerothcore.html" title="WoW-WLK335部署(基于Azerothcore)"><div class="thumbnail"><img alt="WoW-WLK335部署(基于Azerothcore)" src="/assets/blog/WoW/wow.gif"></div><div class="content"><span class="title" href="/posts/wow_wlk_Azerothcore.html" title="WoW-WLK335部署(基于Azerothcore)">WoW-WLK335部署(基于Azerothcore)</span><span class="categories" href="/posts/wow_wlk_Azerothcore.html">WoW</span></div></a><a class="aside-list-item" href="/posts/1.html" title="技术岗位如何写简历（转）"><div class="thumbnail"><img alt="技术岗位如何写简历（转）" src="/assets/blog/%E8%BD%AC%E8%BD%BD/paincker.png"></div><div class="content"><span class="title" href="/posts/1.html" title="技术岗位如何写简历（转）">技术岗位如何写简历（转）</span><span class="categories" href="/posts/1.html">转载</span></div></a></div></div></div></div></main><footer id="footer"><div id="footer_deal"><a class="deal_link" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Misaka10148" title="Github"><i class="solitude  fab fa-github"></i></a><a class="deal_link" href="mailto:237736635@qq.com" rel="external nofollow noreferrer" title="Mail"><i class="solitude  far fa-envelope"></i></a><div class="nolazyload footer_mini_logo" id="footer_mini_logo" title="返回顶部" onclick="sco.toTop()"><img src="/assets/layout/avatar.jpg" alt="返回顶部"></div><a class="deal_link" target="_blank" rel="noopener external nofollow noreferrer" href="https://space.bilibili.com/15323457" title="Bilibili"><i class="solitude  fab fa-bilibili"></i></a><a class="deal_link" target="_blank" rel="noopener external nofollow noreferrer" href="https://v.douyin.com" title="Douyin"><i class="solitude  fab fa-tiktok"></i></a></div><div id="st-footer"><div class="footer-group"><h3 class="footer-title">导航</h3><div class="footer-links"><a class="footer-item" href="/archives/" title="隧道">隧道</a><a class="footer-item" href="/categories/" title="分类">分类</a><a class="footer-item" href="/tags/" title="标签">标签</a></div></div><div class="footer-group"><h3 class="footer-title">协议</h3><div class="footer-links"><a class="footer-item" target="_blank" rel="noopener external nofollow noreferrer" href="https://www.apache.org/licenses/LICENSE-2.0.html" title="Apache-2.0">Apache-2.0</a><a class="footer-item" href="/null" title="隐私协议">隐私协议</a><a class="footer-item" href="/null" title="版权协议">版权协议</a></div></div><div class="footer-group"><h3 class="footer-title">声明</h3><div class="footer-links"><a class="footer-item" href="/null" title="免责声明">免责声明</a><a class="footer-item" href="/null" title="网站地图">网站地图</a></div></div><div class="footer-group"><div class="footer-title-group"><h3 class="footer-title">友链</h3><button class="random-friends-btn" onclick="randomLinksList()" title="友链"><i class="solitude fas fa-arrows-rotate"></i></button></div><div class="footer-links" id="friend-links-in-footer"></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div class="copyright">© 2020 - 2026 By&nbsp;<a class="footer-bar-link" href="/"><img class="author-avatar" src="/assets/icon.png">Misaka10148</a></div><div class="beian-group"><a class="footer-bar-link" target="_blank" rel="noopener external nofollow noreferrer" href="https://hexo.io/">框架：Hexo</a><a class="footer-bar-link" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/everfu/hexo-theme-solitude">主题：Solitude</a></div></div><div class="footer-bar-right"><a class="footer-bar-link" href="/atom.xml" alt="订阅">订阅</a></div></div></div></footer></div><!-- right_menu--><div id="rightMenu"><div class="rightMenu-group rightMenu-small"><div class="rightMenu-item" id="menu-backward"><i class="solitude fas fa-arrow-left"></i></div><div class="rightMenu-item" id="menu-forward"><i class="solitude fas fa-arrow-right"></i></div><div class="rightMenu-item" id="menu-refresh"><i class="solitude fas fa-arrows-rotate"></i></div><div class="rightMenu-item" id="menu-top"><i class="solitude fas fa-arrow-up"></i></div></div><div class="rightMenu-group rightMenu-line rightMenuPlugin"><div class="rightMenu-item" id="menu-copytext"><i class="solitude fas fa-clone"></i><span>复制选中文本</span></div><div class="rightMenu-item" id="menu-pastetext"><i class="solitude fas fa-clipboard"></i><span>粘贴文本</span></div><div class="rightMenu-item" id="menu-newwindow"><i class="solitude far fa-window-maximize"></i><span>新窗口打开</span></div><div class="rightMenu-item" id="menu-copylink"><i class="solitude fas fa-link"></i><span>复制链接地址</span></div><div class="rightMenu-item" id="menu-copyimg"><i class="solitude fas fa-clone"></i><span>复制此图片</span></div><div class="rightMenu-item" id="menu-downloadimg"><i class="solitude fas fa-cloud-arrow-down"></i><span>下载此图片</span></div><div class="rightMenu-item" id="menu-search"><i class="solitude fas fa-magnifying-glass"></i><span>站内搜索</span></div><div class="rightMenu-item" id="menu-music-toggle"><i class="solitude fas fa-play"></i><span>播放音乐</span></div><div class="rightMenu-item" id="menu-music-back"><i class="solitude fas fa-backward"></i><span>切换到上一首</span></div><div class="rightMenu-item" id="menu-music-forward"><i class="solitude fas fa-forward"></i><span>切换到下一首</span></div><div class="rightMenu-item" id="menu-music-copyMusicName"><i class="solitude fas fa-clone"></i><span>复制歌名</span></div></div><div class="rightMenu-group rightMenu-line rightMenuOther"><div class="rightMenu-item" id="menu-darkmode" onclick="sco.switchDarkMode()"><i class="solitude fas fa-circle-half-stroke"></i><span class="menu-darkmode-text">深色模式</span></div><div class="rightMenu-item" id="menu-translate"><i class="solitude fas fa-language"></i><span>轉為繁體</span></div></div></div><div id="rightmenu-mask"></div><!-- inject body--><div><script src="/js/utils.js?v=3.0.15"></script><script src="/js/main.js?v=3.0.15"></script><script src="/js/third_party/waterfall.min.js?v=3.0.15"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pjax/0.2.8/pjax.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.7/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/typeit/8.8.7/index.umd.min.js"></script><script src="/js/third_party/universe.min.js?v=3.0.15"></script><script>dark()
+</script><script src="/js/tw_cn.js?v=3.0.15"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.21/contrib/copy-tex.min.js"><script>(() => {
+  document.querySelectorAll('.article-container span.katex-display').forEach(item => {
+    utils.wrap(item, 'div', {class: 'katex-wrap'})
+  })
+})();
+</script></script><script src="https://cdnjs.cloudflare.com/ajax/libs/node-snackbar/0.1.16/snackbar.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.umd.min.js"></script><script>var meting_api = 'https://meting.qjqq.cn/?server=:server&type=:type&id=:id&auth=:auth&r=:r';</script><script src="https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/meting/2.0.1/Meting.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.6.0/color-thief.min.js"></script><script src="/js/covercolor/local.js?v=3.0.15"></script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+utils.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+</script><script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js"></script><script src="/js/right_menu.js?v=3.0.15"></script><script src="/js/schedule.js"></script><script src="https://open.lightxi.com/unpkg/chinese-lunar@0.1.4/lib/chinese-lunar.js"></script><script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script><div class="js-pjax"><script defer pjax src="https://cdnjs.cloudflare.com/ajax/libs/busuanzi/2.3.0/bsz.pure.mini.min.js"></script></div></div><script>const links = [{"name":"Hexo","link":"https://hexo.io/zh-cn/"},{"name":"Solitude","link":"https://hexo.io/zh-cn/"},{"name":"伍十七","link":"https://efu.me/"},{"name":"❖星港◎Star☆","link":"https://blog.starsharbor.com/"},{"name":"白夜","link":"https://blog.byer.top/"}]
+const randomText = '点击前往按钮进入随机一个友链，不保证跳转网站的安全性和可用性。本次随机到的是本站友链：⌈ ${name} ⌋'
+function travelling() {
+    const link = links[utils.randomNum(links.length)];
+    Snackbar.show({
+        text: randomText.replace(/\$\{name}/,link.name),
+        duration: 8000,
+        pos: 'top-center',
+        actionText: '前往',
+        onActionClick: function(element) {
+            element.style.opacity = 0;
+            window.open(link.link, '_blank');
+        }
+    });
+}
+</script><script>function randomLinksList() {
+    const linkcard = document.getElementById('friend-links-in-footer');
+    if (linkcard == null) return;
+
+    let data = '';
+    let linksCopy = [...links];
+    let count = Math.min(3, linksCopy.length);
+
+    for (let i = 0; i < count; i++) {
+        let index = utils.randomNum(linksCopy.length);
+        const {link, name} = linksCopy[index];
+        data += `<a class="footer-item" href="${link}" target="_blank" rel="noopener noreferrer nofollow">${name}</a>`;
+        linksCopy.splice(index, 1);
+    }
+
+    linkcard.innerHTML = data + '<a class="footer-item" href="/links/">更多</a>';
+}</script><!-- pjax--><script>const pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: ["title","#body-wrap","#site-config","meta[name=\"description\"]",".js-pjax","meta[property^=\"og:\"]","#config-diff",".rs_show",".rs_hide"],
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+})
+
+document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+})
+
+document.addEventListener('pjax:complete', () => {
+    window.refreshFn()
+
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+        const newScript = document.createElement('script')
+        const content = item.text || item.textContent || item.innerHTML || ""
+        Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+        newScript.appendChild(document.createTextNode(content))
+        item.parentNode.replaceChild(newScript, item)
+    })
+
+    GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+})
+
+document.addEventListener('pjax:error', (e) => {
+    if (e.request.status === 404) {
+        pjax.loadUrl('/404.html')
+    }
+})</script><!-- google adsense--><!-- search--><div class="docsearch-wrap"><div id="docsearch" style="display:none"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch-js/3.8.2/umd/index.min.js"></script><script>(() => {
+  docsearch(Object.assign({
+    appId: 'KNSYWJA80Y',
+    apiKey: '64cec8b7ed869453640daca02f5911fc',
+    indexName: 'solitude-js',
+    container: '#docsearch',
+    placeholder: 'search.input_placeholder',
+  }, null))
+
+  const handleClick = () => {
+    document.querySelector('.DocSearch-Button').click()
+  }
+
+  const searchClickFn = () => {
+    utils.addEventListenerPjax(document.querySelector('#search-button > .search'), 'click', handleClick)
+  }
+
+  searchClickFn()
+  window.addEventListener('pjax:complete', searchClickFn)
+})()</script></div><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/docsearch-css/3.8.2/style.min.css"><!-- music--><div class="needEndHide" id="nav-music"><div id="nav-music-hoverTips" onclick="sco.musicToggle()">音乐已暂停</div><meting-js id="2210330170" server="netease" type="playlist" mutex="true" preload="none" theme="var(--efu-main)" data-lrctype="0" order="random" volume="0.8"></meting-js></div></body></html>
+        <script>
+            const posts = ["posts/wow_gm.html","posts/wow_01.html","posts/wow_MaNGOS.html","posts/wow_wlk_Azerothcore.html","posts/1.html","posts/0.html","posts/6.html","posts/5.html","posts/4.html","posts/3.html","posts/csharp_startup02.html","posts/csharp_startup01.html"];
+            function toRandomPost() {
+                const randomPost = posts[Math.floor(Math.random() * posts.length)];
+                pjax.loadUrl(GLOBAL_CONFIG.root + randomPost);
+            }
+        </script>
